@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Header from '../components/Common/Header';
 import SelectCoins from '../components/Compare/SelectCoins';
 import Grid from '../components/Dashboard/Grid';
@@ -22,13 +22,13 @@ function ComparePage() {
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
   const [days, setDays] = useState(30);
 
-  const loadChart = async (firstCoin, secondCoin, range, type) => {
+  const loadChart = useCallback(async (firstCoin, secondCoin, range, type) => {
     const [prices1, prices2] = await Promise.all([
       getCoinPrices(firstCoin, range, type),
       getCoinPrices(secondCoin, range, type),
     ]);
     settingChartData(setChartData, prices1, prices2);
-  };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,7 +49,7 @@ function ComparePage() {
     };
     loadInitialData();
     return () => { cancelled = true; };
-  }, []);
+  }, [crypto1, crypto2, days, priceType, loadChart]);
 
   const handleDaysChange = async (event) => {
     const range = event.target.value;

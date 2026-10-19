@@ -1,5 +1,4 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import Header from '../components/Common/Header';
 import Loader from '../components/Common/Loader';
@@ -8,7 +7,6 @@ import List from '../components/Dashboard/List';
 import CoinInfo from '../components/Coin/CoinInfo';
 import { getCoinData } from '../functions/getCoinData';
 import { getCoinPrices } from '../functions/getCoinPrices';
-import { convertDate } from '../functions/convertDate';
 import LineChart from '../components/Coin/LineChart';
 import SelectDays from '../components/Coin/SelectDays';
 import { settingChartData } from '../functions/settingChartData';
@@ -22,23 +20,22 @@ import TogglePriceType from '../components/Coin/PriceType';
     const [chartData, setChartData] = useState({});
     const [priceType, setPriceType] = useState("prices");
 
-    useEffect(() => {
-       if (id) {
-        getData();
-    }
-    }, [id]);
-
-    async function  getData() {
+    const getData = useCallback(async () => {
+      if (!id) return;
       const data = await getCoinData(id);
       if(data) {
         coinObject(setCoinData, data);
         const prices = await getCoinPrices(id, days, priceType);
-        if(prices.length > 0) {
+        if(Array.isArray(prices) && prices.length > 0) {
           settingChartData(setChartData, prices)
-          setIsLoading(false);
         }
       }
-    }
+      setIsLoading(false);
+    }, [id, days, priceType]);
+
+    useEffect(() => {
+      getData();
+    }, [getData]);
     const handleDaysChange = async (event) => {
       setIsLoading(true);
       setDays(event.target.value);
