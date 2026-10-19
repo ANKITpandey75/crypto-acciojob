@@ -28,11 +28,10 @@ export const settingChartData = (setChartData, prices1, prices2) =>{
                   {
                     label: "crypto2",
                     data: secondPrices.map((price) => price[1]),
-                    borderColor: "#3a80e9",
+                    borderColor: "#61c96f",
                     borderWidth: 2,
                     fill: false,
                     tension: 0.25,
-                    borderColor: "#61c96f",
                     pointRadius: 0,
                     yAxisID: 'crypto2',
                   },
