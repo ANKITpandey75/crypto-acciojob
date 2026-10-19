@@ -1,5 +1,6 @@
 import React from 'react'
 import { Line } from 'react-chartjs-2';
+import 'chart.js/auto';
 import { convertNumber } from '../../../functions/convertNumbers';
 
 function LineChart({ chartData, priceType, multiAxis }) {

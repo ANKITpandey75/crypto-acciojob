@@ -6,7 +6,7 @@ export const getCoinData = async (id) => {
     return await getCachedApiData(
       `coin:${id}`,
       async () => {
-        const response = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}`);
+        const response = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}`, { timeout: 15000 });
         return response.data;
       },
       5 * 60_000,

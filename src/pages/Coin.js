@@ -17,20 +17,28 @@ import TogglePriceType from '../components/Coin/PriceType';
     const [isLoading, setIsLoading] = useState(true);
     const [coinData, setCoinData] = useState();
     const [days, setDays] = useState(60);
-    const [chartData, setChartData] = useState({});
+    const [chartData, setChartData] = useState({ labels: [], datasets: [] });
     const [priceType, setPriceType] = useState("prices");
+    const [loadError, setLoadError] = useState("");
 
     const getData = useCallback(async () => {
       if (!id) return;
-      const data = await getCoinData(id);
-      if(data) {
+      setIsLoading(true);
+      setLoadError("");
+      try {
+        const data = await getCoinData(id);
+        if (!data) {
+          setLoadError("Coin details are temporarily unavailable. Please try again.");
+          return;
+        }
         coinObject(setCoinData, data);
         const prices = await getCoinPrices(id, days, priceType);
-        if(Array.isArray(prices) && prices.length > 0) {
-          settingChartData(setChartData, prices)
-        }
+        if (Array.isArray(prices) && prices.length > 0) settingChartData(setChartData, prices);
+      } catch {
+        setLoadError("Coin details are temporarily unavailable. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }, [id, days, priceType]);
 
     useEffect(() => {
@@ -47,6 +55,7 @@ import TogglePriceType from '../components/Coin/PriceType';
     };
 
     const handlePriceTypeChange = async (event, newType) => {
+      if (!newType) return;
       setPriceType(newType);
       const prices = await getCoinPrices(id, days, newType);
         if (prices.length > 0) {
@@ -59,6 +68,11 @@ import TogglePriceType from '../components/Coin/PriceType';
     <Header/>
     {isLoading ? (
     <Loader/>
+    ) : loadError || !coinData ? (
+    <div role="alert" style={{ color: "var(--white)", textAlign: "center", padding: "2rem" }}>
+      <p>{loadError || "Coin details are unavailable."}</p>
+      <button type="button" onClick={getData}>Try again</button>
+    </div>
     ) : (
      <>
      <div className='grey-wrapper'  style={{ padding: "0rem 1rem"}}>
@@ -70,7 +84,13 @@ import TogglePriceType from '../components/Coin/PriceType';
       priceType={priceType} 
       handlePriceTypeChange={handlePriceTypeChange} 
       />
-      <LineChart chartData={chartData} riceType={priceType} />
+      {chartData.datasets.length > 0 ? (
+        <LineChart chartData={chartData} priceType={priceType} />
+      ) : (
+        <p style={{ color: "var(--white)", textAlign: "center", padding: "1rem" }}>
+          Chart data is temporarily unavailable.
+        </p>
+      )}
      </div>
      <CoinInfo heading={coinData.name} desc={coinData.desc} />
      </>
