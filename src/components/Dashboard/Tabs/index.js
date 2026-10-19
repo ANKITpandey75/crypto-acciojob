@@ -50,13 +50,13 @@ export default function TabsComponent({ coins }) {
           </div>
         </TabPanel>
         <TabPanel value="list">
-          <table className="list-table">
+          <div className="list-table">
             {coins.map(  (item, i) => {
               return <List coin={item} key={i} />
                 
               
             })}
-          </table>
+          </div>
         </TabPanel>
       </TabContext>
     </ThemeProvider>

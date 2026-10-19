@@ -1,32 +1,33 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react';
 import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
-import "./styles.css"
+import './styles.css';
 
 function BackToTop() {
-    let mybutton = document.getElementById("myBtn");
+  const [isVisible, setIsVisible] = useState(false);
 
-// When the user scrolls down 20px from the top of the document, show the button
-window.onscroll = function() {scrollFunction()};
+  useEffect(() => {
+    const handleScroll = () => setIsVisible(window.scrollY > 20);
 
-function scrollFunction() {
-  if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-    mybutton.style.display = "flex";
-  } else {
-    mybutton.style.display = "none";
-  }
-}
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-// When the user clicks on the button, scroll to the top of the document
-function topFunction() {
-  document.body.scrollTop = 0;
-  document.documentElement.scrollTop = 0;
-}
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
-    <div className='back-to-top-btn' id='myBtn' onClick={() => topFunction()}>
-        <ArrowUpwardRoundedIcon style={{ color: "var(--blue)" }} />
-    </div>
-  )
+    <button
+      type="button"
+      className="back-to-top-btn"
+      aria-label="Back to top"
+      onClick={scrollToTop}
+      style={{ display: isVisible ? 'flex' : 'none' }}
+    >
+      <ArrowUpwardRoundedIcon style={{ color: 'var(--blue)' }} />
+    </button>
+  );
 }
 
 export default BackToTop;

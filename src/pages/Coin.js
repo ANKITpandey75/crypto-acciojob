@@ -20,6 +20,8 @@ import TogglePriceType from '../components/Coin/PriceType';
     const [chartData, setChartData] = useState({ labels: [], datasets: [] });
     const [priceType, setPriceType] = useState("prices");
     const [loadError, setLoadError] = useState("");
+    const [chartRetry, setChartRetry] = useState(0);
+    const [isChartLoading, setIsChartLoading] = useState(true);
 
     const getData = useCallback(async () => {
       if (!id) return;
@@ -32,37 +34,38 @@ import TogglePriceType from '../components/Coin/PriceType';
           return;
         }
         coinObject(setCoinData, data);
-        const prices = await getCoinPrices(id, days, priceType);
-        if (Array.isArray(prices) && prices.length > 0) settingChartData(setChartData, prices);
       } catch {
         setLoadError("Coin details are temporarily unavailable. Please try again.");
       } finally {
         setIsLoading(false);
       }
-    }, [id, days, priceType]);
+    }, [id]);
 
     useEffect(() => {
       getData();
     }, [getData]);
-    const handleDaysChange = async (event) => {
-      setIsLoading(true);
+    const handleDaysChange = (event) => {
       setDays(event.target.value);
-      const prices = await getCoinPrices(id, event.target.value, priceType);
-        if (prices.length > 0) {
-          settingChartData(setChartData, prices);
-          setIsLoading(false);
-        }
     };
 
-    const handlePriceTypeChange = async (event, newType) => {
+    const handlePriceTypeChange = (event, newType) => {
       if (!newType) return;
       setPriceType(newType);
-      const prices = await getCoinPrices(id, days, newType);
-        if (prices.length > 0) {
-          settingChartData(setChartData, prices);
-          setIsLoading(false);
-        }
     };
+
+    useEffect(() => {
+      let active = true;
+      setChartData({ labels: [], datasets: [] });
+      setIsChartLoading(true);
+      getCoinPrices(id, days, priceType)
+        .then((prices) => {
+          if (active && prices.length > 0) settingChartData(setChartData, prices);
+        })
+        .finally(() => {
+          if (active) setIsChartLoading(false);
+        });
+      return () => { active = false; };
+    }, [id, days, priceType, chartRetry]);
   return (
   <div>
     <Header/>
@@ -84,12 +87,19 @@ import TogglePriceType from '../components/Coin/PriceType';
       priceType={priceType} 
       handlePriceTypeChange={handlePriceTypeChange} 
       />
-      {chartData.datasets.length > 0 ? (
+      {isChartLoading ? (
+        <p style={{ color: "var(--white)", textAlign: "center", padding: "1rem" }}>
+          Loading chart data…
+        </p>
+      ) : chartData.datasets.length > 0 ? (
         <LineChart chartData={chartData} priceType={priceType} />
       ) : (
-        <p style={{ color: "var(--white)", textAlign: "center", padding: "1rem" }}>
-          Chart data is temporarily unavailable.
-        </p>
+        <div style={{ color: "var(--white)", textAlign: "center", padding: "1rem" }}>
+          <p>Chart data is temporarily unavailable.</p>
+          <button type="button" onClick={() => setChartRetry((attempt) => attempt + 1)}>
+            Retry chart
+          </button>
+        </div>
       )}
      </div>
      <CoinInfo heading={coinData.name} desc={coinData.desc} />

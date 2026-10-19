@@ -15,86 +15,63 @@ function List({ coin }) {
   const volume = toFiniteNumber(coin.total_volume);
   const marketCap = toFiniteNumber(coin.market_cap);
   const hasChange = change !== null;
-  return (
-    <Link to={`/coin/${coin.id}`}>
-    <tr className="list-row">
-      <Tooltip title="Coin Logo">
-        <td className="td-image">
-          <img src={coin.image} alt="coin.name" className="coin-logo" />
-        </td>
-      </Tooltip>
 
+  return (
+    <Link to={`/coin/${coin.id}`} className="list-row">
+      <Tooltip title="Coin Logo">
+        <div className="list-cell td-image">
+          <img src={coin.image} alt={coin.name || 'Cryptocurrency'} className="coin-logo" />
+        </div>
+      </Tooltip>
       <Tooltip title="Coin Info" placement="bottom-start">
-        <td>
+        <div className="list-cell">
           <div className="name-col">
             <p className="coin-symbol">{coin.symbol}</p>
             <p className="coin-name">{coin.name}</p>
           </div>
-        </td>
+        </div>
       </Tooltip>
-
       <Tooltip title="Price Change In 24Hrs">
-        {hasChange && change > 0 ? (
-          <td className="chip-flex">
-            <div className="price-chip">
-              {change.toFixed(2)}%
-            </div>
-            <div className="icon-chip td-icon">
-              <TrendingUpRoundedIcon />
-            </div>
-          </td>
-        ) : (
-          <td className="chip-flex">
-            <td className="price-chip chip-red td-icon">
-              {hasChange ? `${change.toFixed(2)}%` : '—'}
-            </td>
-            <td className="icon-chip chip-red">
-              <TrendingDownRoundedIcon />
-            </td>
-          </td>
-        )}
+        <div className="list-cell chip-flex">
+          <div className={`price-chip ${hasChange && change > 0 ? '' : 'chip-red'}`}>
+            {hasChange ? `${change.toFixed(2)}%` : '—'}
+          </div>
+          <div className={`icon-chip td-icon ${hasChange && change > 0 ? '' : 'chip-red'}`}>
+            {hasChange && change > 0 ? <TrendingUpRoundedIcon /> : <TrendingDownRoundedIcon />}
+          </div>
+        </div>
       </Tooltip>
-
       <Tooltip title="Current Price">
-        <td>
+        <div className="list-cell">
           <h3
             className="coin-price td-centre-align"
-            style={{
-              color:
-                hasChange && change < 0
-                  ? 'var(--red)'
-                  : 'var(--green)',
-            }}
+            style={{ color: hasChange && change < 0 ? 'var(--red)' : 'var(--green)' }}
           >
             {currentPrice !== null ? `$${currentPrice.toLocaleString()}` : '—'}
           </h3>
-        </td>
+        </div>
       </Tooltip>
-
       <Tooltip title="Total Volume" placement="bottom-end">
-        <td>
+        <div className="list-cell">
           <p className="total_volume td-right-align td-total-volume">
             {volume !== null ? volume.toLocaleString() : '—'}
           </p>
-        </td>
+        </div>
       </Tooltip>
-
       <Tooltip title="Market Cap">
-        <td className="desktop-td-mkt">
-          <p className="total_volume td-right-align" placement="bottom-end">
+        <div className="list-cell desktop-td-mkt">
+          <p className="total_volume td-right-align">
             {marketCap !== null ? `$${marketCap.toLocaleString()}` : '—'}
           </p>
-        </td>
+        </div>
       </Tooltip>
-
       <Tooltip title="Market Cap">
-        <td className="mobile-td-mkt">
-          <p className="total_volume td-right-align" placement="bottom-end">
+        <div className="list-cell mobile-td-mkt">
+          <p className="total_volume td-right-align">
             {marketCap !== null ? `$${convertNumber(marketCap)}` : '—'}
           </p>
-        </td>
+        </div>
       </Tooltip>
-    </tr>
     </Link>
   );
 }

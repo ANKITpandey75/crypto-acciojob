@@ -1,4 +1,5 @@
 .list-row{
+    color: inherit;
     display: flex; 
     justify-content: space-between;
     align-items: center;
@@ -13,7 +14,7 @@
 
 }
 
-.list-row td{
+.list-cell{
     text-align: left;
     width: 18%;
 

@@ -38,12 +38,21 @@ export const getCachedApiData = async (key, request, maxAgeMs, isValid = () => t
         } catch (error) {
           const status = error.response?.status;
           const retryable = !status || status === 429 || status >= 500;
-          if (!retryable || attempt >= 1) throw error;
+          // Public market-data APIs can briefly rate-limit one coin while the
+          // other coin's request succeeds. Give transient failures a few
+          // chances before returning a partial comparison chart.
+          if (!retryable || attempt >= 3) throw error;
 
-          const retryAfter = Number(error.response?.headers?.['retry-after']);
-          const waitMs = status === 429 && Number.isFinite(retryAfter) && retryAfter > 0
-            ? Math.min(retryAfter * 1000, 10_000)
-            : 1_000;
+          const retryAfterHeader = error.response?.headers?.['retry-after'];
+          const retryAfterSeconds = Number(retryAfterHeader);
+          const retryAfterDate = Date.parse(retryAfterHeader);
+          const retryAfterMs = Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+            ? retryAfterSeconds * 1000
+            : (Number.isFinite(retryAfterDate) ? Math.max(0, retryAfterDate - Date.now()) : 0);
+          const backoffMs = [1_000, 2_500, 5_000][attempt];
+          const waitMs = status === 429 && retryAfterMs > 0
+            ? retryAfterMs
+            : backoffMs;
           await new Promise((resolve) => window.setTimeout(resolve, waitMs));
         }
       }
